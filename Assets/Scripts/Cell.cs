@@ -16,7 +16,7 @@ public class Cell : MonoBehaviour
 
     public void SetColor(Color color)
     {
-        Debug.Log("Cell: SetColor" + color);
+        // Debug.Log("Cell: SetColor 1 " + color);
         Renderer renderer = GetComponent<Renderer>();
         if (renderer != null)
         {
