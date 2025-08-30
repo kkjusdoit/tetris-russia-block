@@ -1,0 +1,21 @@
+using UnityEngine;
+
+public class Grid : MonoBehaviour
+{
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void SetColor(Color color)
+    {
+        GetComponent<Renderer>().material.color = color;
+    }
+}

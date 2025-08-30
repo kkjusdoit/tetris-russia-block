@@ -1,0 +1,100 @@
+# Unity generated files
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+
+# Unity crash reports
+*.stackdump
+
+# Unity Editor settings
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.VC.db
+
+# Unity project settings
+ProjectSettings/ProjectVersion.txt
+ProjectSettings/EditorBuildSettings.asset
+ProjectSettings/GraphicsSettings.asset
+ProjectSettings/QualitySettings.asset
+ProjectSettings/DynamicsManager.asset
+ProjectSettings/ClusterInputManager.asset
+ProjectSettings/AudioManager.asset
+ProjectSettings/TimeManager.asset
+ProjectSettings/UnityConnectSettings.asset
+ProjectSettings/EditorSettings.asset
+ProjectSettings/NetworkManager.asset
+ProjectSettings/Physics2DSettings.asset
+ProjectSettings/TagManager.asset
+ProjectSettings/InputManager.asset
+ProjectSettings/EditorUserSettings.asset
+
+# User settings
+UserSettings/
+*.user
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+Logs/
+*.log
+
+# Package cache
+Packages/packages-lock.json
+
+# Build artifacts
+*.exe
+*.app
+*.apk
+*.aab
+*.aab.meta
+*.ipa
+*.xcodeproj
+*.xcworkspace
+
+# Local development
+LocalDevelopment/
+*.local
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Temporary files
+*.tmp
+*.temp
+
+# Unity specific
+*.unitypackage
+*.unitypackage.meta
