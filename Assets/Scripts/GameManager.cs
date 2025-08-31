@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour
 {
     public Block[] blocks;
     public Block[] debugBlocks;
+    private int blockIndex = 0;
     public GameObject BgGrids;
 
     public float blockSpeed = 3f;
@@ -520,7 +521,8 @@ public class GameManager : MonoBehaviour
         
         isSpawningBlock = true;
         
-        var block = isDebugMode ? debugBlocks[Random.Range(0, debugBlocks.Length)] : blocks[Random.Range(0, blocks.Length)];
+        var block = isDebugMode ? debugBlocks[blockIndex] : blocks[Random.Range(0, blocks.Length)];
+        blockIndex = (blockIndex + 1) % debugBlocks.Length;
 //         Debug.Log($"GameManager: 选择方块类型 {block.name}");
 //         Debug.Log($"GameManager: 在位置 (0.5, 10.5, 0) 生成新方块 {block.name}");
         
