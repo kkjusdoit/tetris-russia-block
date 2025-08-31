@@ -5,6 +5,7 @@ using System.Collections;
 public class GameManager : MonoBehaviour
 {
     public Block[] blocks;
+    public Block[] debugBlocks;
     public GameObject BgGrids;
 
     public float blockSpeed = 3f;
@@ -80,6 +81,7 @@ public class GameManager : MonoBehaviour
                 // 设置初始颜色
                 if (isDebugMode)
                 {
+                    child.localScale = new Vector3(1f, 1f, 1f);
                     gridComponent.SetColor(emptyColor);
                 }
                 else
@@ -216,7 +218,7 @@ public class GameManager : MonoBehaviour
         }
 
         //对所有的block.cells，如果是null，则更新UpdateCells
-        var allBlocks = FindObjectsOfType<Block>();
+        var allBlocks = FindObjectsByType<Block>(FindObjectsSortMode.None);
         foreach (Block block in allBlocks)
         {
             block.UpdateCells();
@@ -518,7 +520,7 @@ public class GameManager : MonoBehaviour
         
         isSpawningBlock = true;
         
-        var block = blocks[Random.Range(0, blocks.Length)];
+        var block = isDebugMode ? debugBlocks[Random.Range(0, debugBlocks.Length)] : blocks[Random.Range(0, blocks.Length)];
         Debug.Log($"GameManager: 选择方块类型 {block.name}");
         Debug.Log($"GameManager: 在位置 (0.5, 10.5, 0) 生成新方块 {block.name}");
         

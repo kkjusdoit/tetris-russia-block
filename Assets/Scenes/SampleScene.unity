@@ -1273,8 +1273,16 @@ MonoBehaviour:
   - {fileID: 6692744557080453001, guid: 3a88c2e1bb59846a2bde3764e2c88b2b, type: 3}
   - {fileID: 6692744557080453001, guid: 6872aa86160af4ec780140d0cdd23da6, type: 3}
   - {fileID: 6692744557080453001, guid: 16b3b74e93e094086ae5da8bda45b5bc, type: 3}
+  debugBlocks:
+  - {fileID: -2868251676741104991, guid: f1374838b04db465783ec98b9e8b2f76, type: 3}
+  - {fileID: 6692744557080453001, guid: 16b3b74e93e094086ae5da8bda45b5bc, type: 3}
+  - {fileID: 3026022488200643009, guid: 8e6ab78b3c5164248ba6430345b6c8d5, type: 3}
   BgGrids: {fileID: 1323050543}
   blockSpeed: 0.3
+  isDebugMode: 1
+  occupiedColor: {r: 1, g: 0, b: 0, a: 1}
+  emptyColor: {r: 0, g: 1, b: 0, a: 1}
+  normalColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   score: 0
 --- !u!4 &561712357
 Transform:
@@ -1803,7 +1811,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5c4f6518e14f4a0ba02dae175991998, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  borderCollider: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
