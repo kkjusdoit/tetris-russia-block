@@ -17,6 +17,11 @@ public class GameManager : MonoBehaviour
     public Color emptyColor = Color.green; // 空闲格子的颜色
     public Color normalColor = Color.gray; // 正常状态下的颜色
 
+    [Header("Clear Animation Settings")]
+    public float clearAnimationDuration = 0.5f;  // 消除动画总时长
+    public float scaleUpDuration = 0.2f;         // 放大阶段时长
+    public float scaleDownDuration = 0.3f;       // 缩小阶段时长
+    public float maxScale = 1.3f;                // 最大缩放倍数
     public static GameManager Instance { get; private set; }
     //维护一个字典，记录每个格子的GameObject，null表示未占用
     private Dictionary<Vector3, GameObject> gridCell = new Dictionary<Vector3, GameObject>(); //key: position, value: cell GameObject (null if empty)
@@ -83,7 +88,7 @@ public class GameManager : MonoBehaviour
                 if (isDebugMode)
                 {
                     child.name = "Grid_" + pos.x + "_" + pos.y;
-                    child.localScale = new Vector3(1f, 1f, 0.5f);
+                    child.localScale = new Vector3(1f, 1f, 0.1f);
                     gridComponent.SetColor(emptyColor);
                 }
                 else
@@ -205,18 +210,22 @@ public class GameManager : MonoBehaviour
         
         // 记录被消除的行Y坐标
         HashSet<float> clearedRowsY = new HashSet<float>();
-        
-        // 2. 闪烁动画效果 (3次闪烁)
-
-        // 3. 实际消除行
         foreach (GameObject cell in fullRowGameObjects)
         {
             float cellY = cell.transform.position.y;
             clearedRowsY.Add(cellY);
-//             Debug.Log($"GameManager: 销毁方块 {cell.name} 在位置 {cell.transform.position}，行Y: {cellY}");
+        }
+        
+        // 1. 播放消除动画
+        yield return StartCoroutine(PlayClearAnimation(fullRowGameObjects));
+        
+        // 2. 实际消除行（更新网格字典）
+        foreach (GameObject cell in fullRowGameObjects)
+        {
+//             Debug.Log($"GameManager: 销毁方块 {cell.name} 在位置 {cell.transform.position}");
             //update gridCell
             gridCell[cell.transform.position] = null;
-            Destroy(cell);
+            // 注意：GameObject已在动画中被销毁，这里不需要再次Destroy
         }
 
         //对所有的block.cells，如果是null，则更新UpdateCells
@@ -245,8 +254,88 @@ public class GameManager : MonoBehaviour
             UpdateDebugVisualization();
         }
         
-        // 4. 处理上方行掉落，传递消除的行数和最高消除行Y坐标
+        // 3. 处理上方行掉落，传递消除的行数和最高消除行Y坐标
         yield return StartCoroutine(DropRows(highestClearedY, totalClearedRows));
+    }
+
+    // 播放消除动画：缩放效果
+    private IEnumerator PlayClearAnimation(List<GameObject> cellsToDestroy)
+    {
+//         Debug.Log($"=== GameManager: 开始播放消除动画，共 {cellsToDestroy.Count} 个方块 ===");
+        
+        // 动画参数
+        // 使用可配置的动画参数
+        
+        // 记录所有方块的原始缩放
+        Dictionary<GameObject, Vector3> originalScales = new Dictionary<GameObject, Vector3>();
+        foreach (GameObject cell in cellsToDestroy)
+        {
+            if (cell != null)
+            {
+                originalScales[cell] = cell.transform.localScale;
+            }
+        }
+        
+        // 第一阶段：放大
+//         Debug.Log("GameManager: 动画第一阶段 - 放大");
+        float elapsedTime = 0f;
+        while (elapsedTime < this.scaleUpDuration)
+        {
+            float progress = elapsedTime / this.scaleUpDuration;
+            float currentScale = Mathf.Lerp(1f, this.maxScale, progress);
+            
+            foreach (GameObject cell in cellsToDestroy)
+            {
+                if (cell != null && originalScales.ContainsKey(cell))
+                {
+                    cell.transform.localScale = originalScales[cell] * currentScale;
+                }
+            }
+            
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        
+        // 确保达到最大缩放
+        foreach (GameObject cell in cellsToDestroy)
+        {
+            if (cell != null && originalScales.ContainsKey(cell))
+            {
+                cell.transform.localScale = originalScales[cell] * this.maxScale;
+            }
+        }
+        
+        // 第二阶段：缩小到消失
+//         Debug.Log("GameManager: 动画第二阶段 - 缩小");
+        elapsedTime = 0f;
+        while (elapsedTime < this.scaleDownDuration)
+        {
+            float progress = elapsedTime / this.scaleDownDuration;
+            float currentScale = Mathf.Lerp(this.maxScale, 0f, progress);
+            
+            foreach (GameObject cell in cellsToDestroy)
+            {
+                if (cell != null && originalScales.ContainsKey(cell))
+                {
+                    cell.transform.localScale = originalScales[cell] * currentScale;
+                }
+            }
+            
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        
+        // 动画完成，销毁所有方块
+//         Debug.Log("GameManager: 消除动画完成，销毁方块");
+        foreach (GameObject cell in cellsToDestroy)
+        {
+            if (cell != null)
+            {
+                Destroy(cell);
+            }
+        }
+        
+//         Debug.Log("GameManager: 消除动画播放完成");
     }
 
     // GetCellCanDropHeight 方法已删除，因为现在所有上方方块统一下降消除的行数
@@ -373,7 +462,7 @@ public class GameManager : MonoBehaviour
         yield return null;
     }
 
-    public bool CheckGridOccupied(Block block, Vector3 direction)
+    public bool CheckGridOccupied(Block block, Vector3 direction, bool isRotate = false)
     {
         for (int i = 0; i < block.cells.Length; i++)
         {
@@ -383,12 +472,26 @@ public class GameManager : MonoBehaviour
 
             if (isOccupied)
             {
-                Debug.Log($"GameManager: 检测到碰撞，位置 {cellPos} 被 {cellObj.name} 占用");
+                if (isRotate)
+                {
+                    // Debug.Log($"GameManager: 检测到旋转碰撞，位置 {cellPos} 被 {cellObj.name} 占用");
+                }
+                else
+                {
+                    Debug.Log($"GameManager: 检测到移动碰撞，位置 {cellPos} 被 {cellObj.name} 占用");
+                }
                 return true;
             }
             else
             {
-                Debug.Log($"GameManager: 位置 {cellPos} 未被占用");
+                if (isRotate)
+                {
+                    // Debug.Log($"GameManager: 检测到旋转碰撞，位置 {cellPos} 未被占用");
+                }
+                else
+                {
+                    Debug.Log($"GameManager: 检测到移动碰撞，位置 {cellPos} 未被占用");
+                }
             }
             
         }

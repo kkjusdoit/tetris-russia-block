@@ -1278,7 +1278,7 @@ MonoBehaviour:
   - {fileID: 6692744557080453001, guid: 16b3b74e93e094086ae5da8bda45b5bc, type: 3}
   - {fileID: 3026022488200643009, guid: 8e6ab78b3c5164248ba6430345b6c8d5, type: 3}
   BgGrids: {fileID: 1323050543}
-  blockSpeed: 0.3
+  blockSpeed: 0.5
   isDebugMode: 1
   occupiedColor: {r: 1, g: 0, b: 0, a: 1}
   emptyColor: {r: 0, g: 1, b: 0, a: 1}

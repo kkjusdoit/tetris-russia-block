@@ -88,7 +88,7 @@ public class Block : MonoBehaviour
         {
             colors = new Color[3];
             colors[0] = Color.blue;
-            colors[1] = Color.red;
+            colors[1] = Color.cyan;
             colors[2] = Color.yellow;
         }
 
@@ -274,7 +274,7 @@ public class Block : MonoBehaviour
         var beforeRotate = transform.localRotation;
         transform.Rotate(0, 0, 90);
         var direction = new Vector3(0, 0, 0);
-        if (CheckCanMove(direction) && GameManager.Instance.CheckGridOccupied(this, direction))
+        if (CheckCanMove(direction) && !GameManager.Instance.CheckGridOccupied(this, direction, true))
         {
 //             Debug.Log($"Block: {gameObject.name} 旋转成功");
         }
