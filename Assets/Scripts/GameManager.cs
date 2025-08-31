@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
         //遍历BgGrids的子object，获取position，然后设置grid的值为null（未占用）
         foreach (Transform child in BgGrids.transform)
         {
-            Vector3 pos = child.position;
+            Vector3 pos = child.localPosition;
             gridCell[pos] = null;
             
             // 获取Grid组件用于调试可视化
@@ -82,7 +82,8 @@ public class GameManager : MonoBehaviour
                 // 设置初始颜色
                 if (isDebugMode)
                 {
-                    child.localScale = new Vector3(1f, 1f, 1f);
+                    child.name = "Grid_" + pos.x + "_" + pos.y;
+                    child.localScale = new Vector3(1f, 1f, 0.5f);
                     gridComponent.SetColor(emptyColor);
                 }
                 else
@@ -377,13 +378,19 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < block.cells.Length; i++)
         {
             var cellPos = block.cells[i].transform.position + direction;
-            
-            // 如果字典里有这个key且GameObject不为null，则表示被占据
-            if (gridCell.TryGetValue(cellPos, out GameObject cellObj) && cellObj != null)
+
+            var isOccupied = gridCell.TryGetValue(cellPos, out GameObject cellObj) && cellObj != null;
+
+            if (isOccupied)
             {
-//                 Debug.Log($"GameManager: 检测到碰撞，位置 {cellPos} 被 {cellObj.name} 占用");
+                Debug.Log($"GameManager: 检测到碰撞，位置 {cellPos} 被 {cellObj.name} 占用");
                 return true;
             }
+            else
+            {
+                Debug.Log($"GameManager: 位置 {cellPos} 未被占用");
+            }
+            
         }
         return false;
     }
@@ -523,7 +530,7 @@ public class GameManager : MonoBehaviour
         
         var block = isDebugMode ? debugBlocks[blockIndex] : blocks[Random.Range(0, blocks.Length)];
         blockIndex = (blockIndex + 1) % debugBlocks.Length;
-//         Debug.Log($"GameManager: 选择方块类型 {block.name}");
+        Debug.Log($"GameManager: 选择方块类型 {block.name}");
 //         Debug.Log($"GameManager: 在位置 (0.5, 10.5, 0) 生成新方块 {block.name}");
         
         var go = Instantiate(block, new Vector3(0.5f, 10.5f, 0), Quaternion.identity);

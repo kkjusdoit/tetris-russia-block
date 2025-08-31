@@ -273,7 +273,8 @@ public class Block : MonoBehaviour
 //         Debug.Log($"Block: {gameObject.name} 执行旋转操作");
         var beforeRotate = transform.localRotation;
         transform.Rotate(0, 0, 90);
-        if (CheckCanMove(new Vector3(0, 0, 0)))
+        var direction = new Vector3(0, 0, 0);
+        if (CheckCanMove(direction) && GameManager.Instance.CheckGridOccupied(this, direction))
         {
 //             Debug.Log($"Block: {gameObject.name} 旋转成功");
         }
