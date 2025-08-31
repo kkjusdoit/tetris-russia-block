@@ -2,28 +2,12 @@ using UnityEngine;
 
 public class BottomBorder : MonoBehaviour
 {
-    public BoxCollider borderCollider;
-    private Rigidbody rb;
+    // BottomBorder现在不再需要碰撞检测功能
+    // 游戏逻辑通过坐标检查来处理边界
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        borderCollider = GetComponent<BoxCollider>();
-        if (borderCollider == null)
-        {
-            Debug.LogError("BottomBorder: BoxCollider component not found!");
-        }
-        borderCollider.isTrigger = true;
-        
-        // Add Rigidbody for trigger detection
-        rb = GetComponent<Rigidbody>();
-        if (rb == null)
-        {
-            rb = gameObject.AddComponent<Rigidbody>();
-        }
-        rb.isKinematic = true; // Prevent physics from affecting position
-        rb.useGravity = false; // Don't let gravity affect it
+        Debug.Log("BottomBorder: 初始化完成（不再使用碰撞检测）");
     }
-
-
 }

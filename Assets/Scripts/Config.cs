@@ -4,6 +4,10 @@ public static class Config
 {
     public static int GRID_WIDTH = 10;
     public static int GRID_HEIGHT = 20;
+    public static float TOP_POS_Y = 9.5f;
+    public static float BOTTOM_POS_Y = -9.5f;
+    public static float LEFT_POS_X = -4.5f;
+    public static float RIGHT_POS_X = 4.5f;
 
     public static float BLOCK_SIZE = 1f;
 
