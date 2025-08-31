@@ -1267,10 +1267,15 @@ MonoBehaviour:
   - {fileID: -2868251676741104991, guid: f1374838b04db465783ec98b9e8b2f76, type: 3}
   - {fileID: 2058396335893628813, guid: 66ee81f0ca64d4e6d8ba1eca33df039e, type: 3}
   - {fileID: 3026022488200643009, guid: 8e6ab78b3c5164248ba6430345b6c8d5, type: 3}
+  - {fileID: 4202801551492979677, guid: 9c77ede0f5b5a45db9c7d49dfbfe272e, type: 3}
   - {fileID: 4202801551492979677, guid: d686b1e1c157d4eb1a6f6900025d78c8, type: 3}
+  - {fileID: 6692744557080453001, guid: 13491e1eb758045168a9fdec86764def, type: 3}
+  - {fileID: 6692744557080453001, guid: 3a88c2e1bb59846a2bde3764e2c88b2b, type: 3}
   - {fileID: 6692744557080453001, guid: 6872aa86160af4ec780140d0cdd23da6, type: 3}
+  - {fileID: 6692744557080453001, guid: 16b3b74e93e094086ae5da8bda45b5bc, type: 3}
   BgGrids: {fileID: 1323050543}
   blockSpeed: 0.3
+  score: 0
 --- !u!4 &561712357
 Transform:
   m_ObjectHideFlags: 0
