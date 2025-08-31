@@ -8,6 +8,6 @@ public class BottomBorder : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        Debug.Log("BottomBorder: 初始化完成（不再使用碰撞检测）");
+//         Debug.Log("BottomBorder: 初始化完成（不再使用碰撞检测）");
     }
 }

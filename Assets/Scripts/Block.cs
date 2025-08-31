@@ -50,7 +50,7 @@ public class Block : MonoBehaviour
 
     public void Init(float speed)
     {
-        Debug.Log($"=== Block: {gameObject.name} Init 被调用，速度: {speed} ===");
+//         Debug.Log($"=== Block: {gameObject.name} Init 被调用，速度: {speed} ===");
         isMoving = true;
         hasStopped = false;
         
@@ -64,7 +64,7 @@ public class Block : MonoBehaviour
         SetSpeed(speed);
         // Initialize fall timer
         fallTimer = 0f;
-        Debug.Log($"Block: {gameObject.name} 初始化完成");
+//         Debug.Log($"Block: {gameObject.name} 初始化完成");
     }
 
     void PrepareCells()
@@ -114,12 +114,12 @@ public class Block : MonoBehaviour
     // 操作队列管理方法
     private void EnqueueOperation(BlockOperation operation)
     {
-        Debug.Log($"Block: {gameObject.name} 入队操作 {operation.type} {operation.direction}");
+//         Debug.Log($"Block: {gameObject.name} 入队操作 {operation.type} {operation.direction}");
         
         // 如果是停止操作，清空队列并立即执行
         if (operation.type == BlockOperationType.Stop)
         {
-            Debug.Log($"Block: {gameObject.name} 停止操作优先级最高，清空队列");
+//             Debug.Log($"Block: {gameObject.name} 停止操作优先级最高，清空队列");
             operationQueue.Clear();
             operationQueue.Enqueue(operation);
             return;
@@ -136,7 +136,7 @@ public class Block : MonoBehaviour
             // 如果新操作优先级更高，丢弃现有的低优先级操作
             if (operation.priority < existingOp.priority)
             {
-                Debug.Log($"Block: {gameObject.name} 新操作 {operation.type} 优先级更高，丢弃 {existingOp.type}");
+//                 Debug.Log($"Block: {gameObject.name} 新操作 {operation.type} 优先级更高，丢弃 {existingOp.type}");
                 continue;
             }
             // 如果现有操作优先级更高或相等，保留现有操作
@@ -147,7 +147,7 @@ public class Block : MonoBehaviour
                 if (existingOp.type == operation.type)
                 {
                     shouldAdd = false;
-                    Debug.Log($"Block: {gameObject.name} 队列中已有相同操作 {operation.type}，忽略新操作");
+//                     Debug.Log($"Block: {gameObject.name} 队列中已有相同操作 {operation.type}，忽略新操作");
                 }
             }
         }
@@ -162,7 +162,7 @@ public class Block : MonoBehaviour
         if (shouldAdd)
         {
             operationQueue.Enqueue(operation);
-            Debug.Log($"Block: {gameObject.name} 操作 {operation.type} 已入队，队列长度: {operationQueue.Count}");
+//             Debug.Log($"Block: {gameObject.name} 操作 {operation.type} 已入队，队列长度: {operationQueue.Count}");
         }
     }
     
@@ -179,7 +179,7 @@ public class Block : MonoBehaviour
         currentOperation = operation;
         isProcessingOperation = true;
         
-        Debug.Log($"Block: {gameObject.name} 开始处理操作 {operation.type} {operation.direction}");
+//         Debug.Log($"Block: {gameObject.name} 开始处理操作 {operation.type} {operation.direction}");
         
         // 执行操作
         StartCoroutine(ExecuteOperation(operation));
@@ -190,18 +190,18 @@ public class Block : MonoBehaviour
         switch (operation.type)
         {
             case BlockOperationType.Stop:
-                Debug.Log($"Block: {gameObject.name} 执行停止操作");
+//                 Debug.Log($"Block: {gameObject.name} 执行停止操作");
                 ExecuteStopMoving();
                 break;
                 
             case BlockOperationType.Rotate:
-                Debug.Log($"Block: {gameObject.name} 执行旋转操作");
+//                 Debug.Log($"Block: {gameObject.name} 执行旋转操作");
                 ExecuteRotate();
                 break;
                 
             case BlockOperationType.ManualMove:
             case BlockOperationType.AutoFall:
-                Debug.Log($"Block: {gameObject.name} 执行移动操作 {operation.direction}");
+//                 Debug.Log($"Block: {gameObject.name} 执行移动操作 {operation.direction}");
                 ExecuteMoveImpl(operation.direction, operation.type);
                 break;
         }
@@ -210,7 +210,7 @@ public class Block : MonoBehaviour
         isProcessingOperation = false;
         currentOperation = null;
         
-        Debug.Log($"Block: {gameObject.name} 操作 {operation.type} 执行完成");
+//         Debug.Log($"Block: {gameObject.name} 操作 {operation.type} 执行完成");
         
         yield return null;
     }
@@ -270,16 +270,16 @@ public class Block : MonoBehaviour
     // 执行旋转操作的实际方法
     void ExecuteRotate()
     {
-        Debug.Log($"Block: {gameObject.name} 执行旋转操作");
+//         Debug.Log($"Block: {gameObject.name} 执行旋转操作");
         var beforeRotate = transform.localRotation;
         transform.Rotate(0, 0, 90);
         if (CheckCanMove(new Vector3(0, 0, 0)))
         {
-            Debug.Log($"Block: {gameObject.name} 旋转成功");
+//             Debug.Log($"Block: {gameObject.name} 旋转成功");
         }
         else
         {
-            Debug.Log($"Block: {gameObject.name} 旋转失败，恢复原状态");
+//             Debug.Log($"Block: {gameObject.name} 旋转失败，恢复原状态");
             transform.localRotation = beforeRotate;
         }
     }
@@ -308,13 +308,13 @@ public class Block : MonoBehaviour
     // 执行移动操作的实际方法
     void ExecuteMoveImpl(Vector3 direction, BlockOperationType operationType)
     {
-        Debug.Log($"Block: {gameObject.name} 执行移动操作 {direction} (类型: {operationType})");
+//         Debug.Log($"Block: {gameObject.name} 执行移动操作 {direction} (类型: {operationType})");
         
         var oldPosition = transform.position;
         //check if the block is in the grid and within the border
         if (!CheckCanMove(direction))
         {
-            Debug.Log($"Block: {gameObject.name} 无法移动到 {direction}，超出边界");
+//             Debug.Log($"Block: {gameObject.name} 无法移动到 {direction}，超出边界");
             return;
         }
         var newPosition = oldPosition + direction;
@@ -322,17 +322,17 @@ public class Block : MonoBehaviour
         //if new pos is occupied
         if (GameManager.Instance.CheckGridOccupied(this, direction))
         {
-            Debug.Log($"Block: {gameObject.name} 在方向 {direction} 检测到碰撞");
+//             Debug.Log($"Block: {gameObject.name} 在方向 {direction} 检测到碰撞");
             // 区分垂直和水平移动
             if (direction.y < 0) // 向下移动碰到障碍
             {
-                Debug.Log($"Block: {gameObject.name} 向下移动碰撞，触发停止操作");
+//                 Debug.Log($"Block: {gameObject.name} 向下移动碰撞，触发停止操作");
                 EnqueueOperation(new BlockOperation(BlockOperationType.Stop)); // 触发停止操作
                 return;
             }
             else // 水平移动碰到障碍
             {
-                Debug.Log($"Block: {gameObject.name} 水平移动碰撞，忽略移动");
+//                 Debug.Log($"Block: {gameObject.name} 水平移动碰撞，忽略移动");
                 // 简单忽略这次移动，不停止方块
                 return;
             }
@@ -343,7 +343,7 @@ public class Block : MonoBehaviour
         {
             if (cell.transform.position.y + direction.y <= Config.BOTTOM_POS_Y)
             {
-                Debug.Log($"Block: {gameObject.name} 到达底部，触发停止操作");
+//                 Debug.Log($"Block: {gameObject.name} 到达底部，触发停止操作");
                 transform.position = newPosition;
                 EnqueueOperation(new BlockOperation(BlockOperationType.Stop)); // 触发停止操作
                 return;
@@ -351,7 +351,7 @@ public class Block : MonoBehaviour
         }
         
         transform.position = newPosition;
-        Debug.Log($"Block: {gameObject.name} 移动到位置 {newPosition}");
+//         Debug.Log($"Block: {gameObject.name} 移动到位置 {newPosition}");
     }
     
     // 保留原有的MoveImpl方法以便兼容（如果有其他地方调用）
@@ -382,11 +382,11 @@ public class Block : MonoBehaviour
     // 执行停止操作的实际方法
     void ExecuteStopMoving()
     {
-        Debug.Log($"Block: {gameObject.name} 执行停止操作");
+//         Debug.Log($"Block: {gameObject.name} 执行停止操作");
         
         if (hasStopped)
         {
-            Debug.LogWarning($"Block: {gameObject.name} 已经停止过了，忽略重复调用");
+//             Debug.LogWarning($"Block: {gameObject.name} 已经停止过了，忽略重复调用");
             return;
         }
         
@@ -397,9 +397,9 @@ public class Block : MonoBehaviour
         operationQueue.Clear();
         isProcessingOperation = false;
         
-        Debug.Log($"Block: {gameObject.name} 正式停止移动，通知GameManager更新网格");
+//         Debug.Log($"Block: {gameObject.name} 正式停止移动，通知GameManager更新网格");
         GameManager.Instance.UpdateGrid(this);
-        Debug.Log($"Block: {gameObject.name} UpdateGrid 调用完成");
+//         Debug.Log($"Block: {gameObject.name} UpdateGrid 调用完成");
     }
     
     // 保留原有的StopMoving方法以便兼容（如果有其他地方调用）

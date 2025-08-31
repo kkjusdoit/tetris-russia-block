@@ -26,7 +26,7 @@ public class Cell : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Cell: Renderer component not found!");
+//             Debug.LogWarning("Cell: Renderer component not found!");
         }
     }
 
@@ -70,7 +70,7 @@ public class Cell : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Cell: Renderer component not found!");
+//             Debug.LogWarning("Cell: Renderer component not found!");
         }
     }
 

@@ -18,13 +18,13 @@ public class CellColorTest : MonoBehaviour
         
         if (cellComponent == null)
         {
-            Debug.LogError("CellColorTest: Cell component not found on this GameObject!");
+//             Debug.LogError("CellColorTest: Cell component not found on this GameObject!");
             return;
         }
         
         // 设置初始颜色为白色
         cellComponent.SetColor(Color.white);
-        Debug.Log("CellColorTest: Initial color set to white");
+//         Debug.Log("CellColorTest: Initial color set to white");
     }
     
     void Update()
@@ -41,7 +41,7 @@ public class CellColorTest : MonoBehaviour
         if (cellComponent != null)
         {
             cellComponent.SetColor(testColor);
-            Debug.Log($"CellColorTest: Color changed to {testColor}");
+//             Debug.Log($"CellColorTest: Color changed to {testColor}");
             
             // 随机改变测试颜色
             testColor = new Color(Random.value, Random.value, Random.value, 1f);
@@ -55,7 +55,7 @@ public class CellColorTest : MonoBehaviour
         if (cellComponent != null)
         {
             cellComponent.SetColor(testColor);
-            Debug.Log($"CellColorTest: Color changed to {testColor} via Inspector");
+//             Debug.Log($"CellColorTest: Color changed to {testColor} via Inspector");
         }
     }
 } 

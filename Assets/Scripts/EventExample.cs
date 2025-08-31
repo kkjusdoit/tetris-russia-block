@@ -60,7 +60,7 @@ public class EventExample : MonoBehaviour
     // 事件处理函数
     private void OnBlockLanded(BlockLandedEvent eventData)
     {
-        Debug.Log($"方块落地: 位置 {eventData.position}, 类型 {eventData.blockType}");
+//         Debug.Log($"方块落地: 位置 {eventData.position}, 类型 {eventData.blockType}");
         
         // 这里可以添加方块落地后的逻辑
         // 比如播放音效、粒子效果等
@@ -68,7 +68,7 @@ public class EventExample : MonoBehaviour
 
     private void OnLineCleared(LineClearedEvent eventData)
     {
-        Debug.Log($"行消除: 第 {eventData.rowIndex} 行, 消除了 {eventData.linesCleared} 行");
+//         Debug.Log($"行消除: 第 {eventData.rowIndex} 行, 消除了 {eventData.linesCleared} 行");
         
         // 这里可以添加行消除后的逻辑
         // 比如更新分数、播放特效等
@@ -76,7 +76,7 @@ public class EventExample : MonoBehaviour
 
     private void OnScoreChanged(ScoreChangedEvent eventData)
     {
-        Debug.Log($"分数变化: 新分数 {eventData.newScore}, 增加 {eventData.scoreIncrease}");
+//         Debug.Log($"分数变化: 新分数 {eventData.newScore}, 增加 {eventData.scoreIncrease}");
         
         // 这里可以添加分数变化后的逻辑
         // 比如更新UI、检查等级提升等

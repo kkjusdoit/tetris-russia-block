@@ -25,13 +25,13 @@ public class CellUsageExample : MonoBehaviour
         
         if (cell == null)
         {
-            Debug.LogError("CellUsageExample: Cell component not found!");
+//             Debug.LogError("CellUsageExample: Cell component not found!");
             return;
         }
 
         // 设置初始颜色
         cell.SetColor(Color.gray);
-        Debug.Log("Cell initialized with gray color");
+//         Debug.Log("Cell initialized with gray color");
     }
 
     void Update()
@@ -69,7 +69,7 @@ public class CellUsageExample : MonoBehaviour
             if (colorIndex < blockColors.Length)
             {
                 cell.SetColor(blockColors[colorIndex]);
-                Debug.Log($"Set color for {blockType} block: {blockColors[colorIndex]}");
+//                 Debug.Log($"Set color for {blockType} block: {blockColors[colorIndex]}");
             }
         }
     }
@@ -83,7 +83,7 @@ public class CellUsageExample : MonoBehaviour
         {
             Color randomColor = new Color(Random.value, Random.value, Random.value, 1f);
             cell.SetColor(randomColor);
-            Debug.Log($"Set random color: {randomColor}");
+//             Debug.Log($"Set random color: {randomColor}");
         }
     }
 
@@ -96,7 +96,7 @@ public class CellUsageExample : MonoBehaviour
         {
             float randomAlpha = Random.value;
             cell.SetAlpha(randomAlpha);
-            Debug.Log($"Set random alpha: {randomAlpha}");
+//             Debug.Log($"Set random alpha: {randomAlpha}");
         }
     }
 
@@ -109,7 +109,7 @@ public class CellUsageExample : MonoBehaviour
         if (cell != null)
         {
             Color currentColor = cell.GetColor();
-            Debug.Log($"Current color: {currentColor}, Alpha: {currentColor.a}");
+//             Debug.Log($"Current color: {currentColor}, Alpha: {currentColor.a}");
         }
     }
 } 

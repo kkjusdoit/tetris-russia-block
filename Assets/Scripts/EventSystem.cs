@@ -114,7 +114,7 @@ public static class EventSystem
                     }
                     catch (Exception e)
                     {
-                        Debug.LogError($"Error triggering event {eventType.Name}: {e.Message}");
+//                         Debug.LogError($"Error triggering event {eventType.Name}: {e.Message}");
                     }
                 }
             }
@@ -144,7 +144,7 @@ public static class EventSystem
                     }
                     catch (Exception e)
                     {
-                        Debug.LogError($"Error triggering event {eventType.Name}: {e.Message}");
+//                         Debug.LogError($"Error triggering event {eventType.Name}: {e.Message}");
                     }
                 }
             }
