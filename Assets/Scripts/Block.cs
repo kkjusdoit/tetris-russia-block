@@ -27,6 +27,9 @@ public struct BlockOperation
 
 public class Block : MonoBehaviour
 {
+    // 浮点精度容差常量
+    private const float EPSILON = 0.001f;
+    
     public Cell[] cells;
     float speed;
     bool isMoving = false;
@@ -298,8 +301,13 @@ public class Block : MonoBehaviour
         foreach (Cell cell in cells)
         {
             var newPos = cell.transform.position + direction;
-            if (newPos.x < Config.LEFT_POS_X || newPos.x > Config.RIGHT_POS_X || newPos.y < Config.BOTTOM_POS_Y)
+            
+            // 使用容差值进行边界检查，避免浮点精度问题
+            if (newPos.x < Config.LEFT_POS_X - EPSILON || 
+                newPos.x > Config.RIGHT_POS_X + EPSILON || 
+                newPos.y < Config.BOTTOM_POS_Y - EPSILON)
             {
+                Debug.Log($"Block: {gameObject.name} {cell.transform.position} + {direction} 无法移动到 {newPos}，超出边界");
                 return false;
             }
         }
@@ -315,7 +323,7 @@ public class Block : MonoBehaviour
         //check if the block is in the grid and within the border
         if (!CheckCanMove(direction))
         {
-//             Debug.Log($"Block: {gameObject.name} 无法移动到 {direction}，超出边界");
+            Debug.Log($"Block: {gameObject.name} 无法移动到 {direction}，超出边界");
             return;
         }
         var newPosition = oldPosition + direction;
@@ -342,7 +350,8 @@ public class Block : MonoBehaviour
         //if reach the bottom, stop moving
         foreach (Cell cell in cells)
         {
-            if (cell.transform.position.y + direction.y <= Config.BOTTOM_POS_Y)
+            // 使用容差值进行底部检查，避免浮点精度问题
+            if (cell.transform.position.y + direction.y <= Config.BOTTOM_POS_Y + EPSILON)
             {
 //                 Debug.Log($"Block: {gameObject.name} 到达底部，触发停止操作");
                 transform.position = newPosition;
