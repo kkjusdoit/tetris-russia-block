@@ -24,9 +24,9 @@ public class GameManager : MonoBehaviour
     public float maxScale = 1.3f;                // 最大缩放倍数
     public static GameManager Instance { get; private set; }
     //维护一个字典，记录每个格子的GameObject，null表示未占用
-    private Dictionary<Vector3, GameObject> gridCell = new Dictionary<Vector3, GameObject>(); //key: position, value: cell GameObject (null if empty)
+    private Dictionary<string, GameObject> gridCell = new Dictionary<string, GameObject>(); //key: position string, value: cell GameObject (null if empty)
     // 维护背景网格的引用，用于调试可视化
-    private Dictionary<Vector3, Grid> bgGridComponents = new Dictionary<Vector3, Grid>();
+    private Dictionary<string, Grid> bgGridComponents = new Dictionary<string, Grid>();
     public int score = 0;
     
     // 防止重复生成方块的标志
@@ -70,6 +70,17 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 将Vector3位置转换为字符串key
+    /// </summary>
+    /// <param name="position">Vector3位置</param>
+    /// <returns>格式化的字符串key</returns>
+    private string Vector3ToKey(Vector3 position)
+    {
+        // 使用固定小数位数避免浮点精度问题
+        return $"{position.x:F1}_{position.y:F1}_{position.z:F1}";
+    }
+    
+    /// <summary>
     /// 设置网格单元格的值
     /// </summary>
     /// <param name="position">网格位置</param>
@@ -77,12 +88,13 @@ public class GameManager : MonoBehaviour
     /// <param name="context">调用上下文，用于调试</param>
     private void SetGridCell(Vector3 position, GameObject cellObject, string context = "")
     {
-        gridCell[position] = cellObject;
+        string key = Vector3ToKey(position);
+        gridCell[key] = cellObject;
         
         if (!string.IsNullOrEmpty(context) && isDebugMode)
         {
             string status = cellObject == null ? "空闲" : $"被占用({cellObject.name})";
-            Debug.Log($"[{context}] 设置网格 {position}: {status}");
+            Debug.Log($"[{context}] 设置网格 {position} (key:{key}): {status}");
         }
     }
     
@@ -95,18 +107,19 @@ public class GameManager : MonoBehaviour
     /// <returns>是否成功获取到值</returns>
     private bool TryGetGridCell(Vector3 position, out GameObject cellObject, string context = "")
     {
-        bool result = gridCell.TryGetValue(position, out cellObject);
+        string key = Vector3ToKey(position);
+        bool result = gridCell.TryGetValue(key, out cellObject);
         
         if (!string.IsNullOrEmpty(context) && isDebugMode)
         {
             if (result)
             {
                 string status = cellObject == null ? "空闲" : $"被占用({cellObject.name})";
-                Debug.Log($"[{context}] 获取网格 {position}: {status}");
+                Debug.Log($"[{context}] 获取网格 {position} (key:{key}): {status}");
             }
             else
             {
-                Debug.LogWarning($"[{context}] 网格位置 {position} 不存在于字典中");
+                Debug.LogWarning($"[{context}] 网格位置 {position} (key:{key}) 不存在于字典中");
             }
         }
         
@@ -127,7 +140,7 @@ public class GameManager : MonoBehaviour
             Grid gridComponent = child.GetComponent<Grid>();
             if (gridComponent != null)
             {
-                bgGridComponents[pos] = gridComponent;
+                bgGridComponents[Vector3ToKey(pos)] = gridComponent;
                 // 设置初始颜色
                 if (isDebugMode)
                 {
@@ -170,7 +183,7 @@ public class GameManager : MonoBehaviour
             var cellPos = block.cells[i].transform.position;
 //             Debug.Log($"GameManager: 放置方块cell到位置 {cellPos}");
             
-            if (cellPos.y >= 9.5f)
+            if (cellPos.y >= Config.TOP_POS_Y)
             {
 //                 Debug.LogError("=== GAME OVER: 方块到达顶部 ===");
                 return;
@@ -557,31 +570,36 @@ public class GameManager : MonoBehaviour
         
 //         Debug.Log("=== GameManager: 更新调试可视化 ===");
         
-        foreach (var kvp in bgGridComponents)
+        // 需要重新遍历所有网格位置，因为bgGridComponents的key现在是string
+        for (float y = Config.BOTTOM_POS_Y; y <= Config.TOP_POS_Y; y += Config.BLOCK_SIZE)
         {
-            Vector3 pos = kvp.Key;
-            Grid gridComponent = kvp.Value;
-            
-            if (gridComponent == null) continue;
-            
-            // 检查该位置是否被占用
-            if (TryGetGridCell(pos, out GameObject occupyingCell, "UpdateBgGrid"))
+            for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X; x += Config.BLOCK_SIZE)
             {
-                if (occupyingCell != null)
+                Vector3 pos = new Vector3(x, y, 0);
+                string key = Vector3ToKey(pos);
+                
+                if (bgGridComponents.TryGetValue(key, out Grid gridComponent) && gridComponent != null)
                 {
-                    // 被占用 - 显示红色
-                    gridComponent.SetColor(occupiedColor);
-//                     Debug.Log($"GameManager: 位置 {pos} 被占用，设为红色");
+                    // 检查该位置是否被占用
+                    if (TryGetGridCell(pos, out GameObject occupyingCell, "UpdateBgGrid"))
+                    {
+                        if (occupyingCell != null)
+                        {
+                            // 被占用 - 显示红色
+                            gridComponent.SetColor(occupiedColor);
+//                             Debug.Log($"GameManager: 位置 {pos} 被占用，设为红色");
+                        }
+                        else
+                        {
+                            // 空闲 - 显示绿色
+                            gridComponent.SetColor(emptyColor);
+                        }
+                    }
+                    else
+                    {
+//                         Debug.LogWarning($"GameManager: 位置 {pos} 不在gridCell字典中");
+                    }
                 }
-                else
-                {
-                    // 空闲 - 显示绿色
-                    gridComponent.SetColor(emptyColor);
-                }
-            }
-            else
-            {
-//                 Debug.LogWarning($"GameManager: 位置 {pos} 不在gridCell字典中");
             }
         }
         
