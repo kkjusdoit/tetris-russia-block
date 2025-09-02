@@ -314,8 +314,9 @@ public class GameManager : MonoBehaviour
             UpdateDebugVisualization();
         }
         
-        // 3. 处理上方行掉落，传递消除的行数和最高消除行Y坐标
-        yield return StartCoroutine(DropRows(highestClearedY, totalClearedRows));
+        // 3. 处理上方行掉落，将HashSet转换为List后传递
+        List<float> clearedRowsList = new List<float>(clearedRowsY);
+        yield return StartCoroutine(DropRows(clearedRowsList));
     }
 
     // 播放消除动画：缩放效果
@@ -401,24 +402,30 @@ public class GameManager : MonoBehaviour
     // GetCellCanDropHeight 方法已删除，因为现在所有上方方块统一下降消除的行数
 
     //处理上方行掉落
-    private IEnumerator DropRows(float clearedRowY, int clearedRowCount)
+    private IEnumerator DropRows(List<float> clearedRowsY)
     {
-        // 从被消除行的上方一行开始检查
-        float startY = clearedRowY + Config.BLOCK_SIZE;
-        float dropDistance = clearedRowCount * Config.BLOCK_SIZE;
+        // 将消除行按Y坐标排序，从低到高
+        List<float> sortedClearedRows = new List<float>(clearedRowsY);
+        sortedClearedRows.Sort();
+        
+        int totalClearedRows = sortedClearedRows.Count;
         
 //         Debug.Log("=== GameManager: 开始处理方块掉落 ===");
-//         Debug.Log($"GameManager: 最高消除行Y: {clearedRowY}，消除了 {clearedRowCount} 行");
-//         Debug.Log($"GameManager: 从 Y: {startY} 开始检查到 {Config.TOP_POS_Y}");
-//         Debug.Log($"GameManager: 所有上方方块统一下降 {dropDistance} 单位");
+//         Debug.Log($"GameManager: 消除行数={totalClearedRows}，消除行位置: [{string.Join(", ", sortedClearedRows)}]");
+        
+        // 找到最低的消除行，从这里开始处理掉落
+        float lowestClearedY = sortedClearedRows[0];
+        float startY = lowestClearedY + Config.BLOCK_SIZE; // 从最低消除行上方开始
+        
+//         Debug.Log($"GameManager: 最低消除行Y: {lowestClearedY}，从 Y: {startY} 开始检查到 {Config.TOP_POS_Y}");
 //         Debug.Log($"GameManager: X范围: {Config.LEFT_POS_X} 到 {Config.RIGHT_POS_X}");
         
         int totalDroppedCells = 0;
         int totalCheckedCells = 0;
         
-        // 从被消除行的上方开始，逐行向上处理
-        // 所有在消除行上方的方块都统一下降 clearedRowCount 行
-        for (float y = startY; y <= Config.TOP_POS_Y; y += Config.BLOCK_SIZE) //从消除行上方开始，到顶部结束
+        // 从最低消除行的上方开始，逐行向上处理
+        // 每个方块根据其下方被消除的行数计算掉落距离
+        for (float y = startY; y <= Config.TOP_POS_Y; y += Config.BLOCK_SIZE) //从最低消除行上方开始，到顶部结束
         {
 //             Debug.Log($"GameManager: 检查第 {y} 行");
             int rowCellCount = 0;
@@ -439,9 +446,22 @@ public class GameManager : MonoBehaviour
 //                         Debug.Log($"GameManager: 位置 {pos} 有方块 {cellObj.name}");
                         
                         Vector3 oldPos = cellObj.transform.position;
-                        Vector3 newPos = oldPos - new Vector3(0, dropDistance, 0);
                         
-//                         Debug.Log($"GameManager: 方块 {cellObj.name} 从 {oldPos} 统一下降到 {newPos}");
+                        // 计算该方块下方有多少行被消除
+                        int rowsBelowCleared = 0;
+                        foreach (float clearedY in sortedClearedRows)
+                        {
+                            if (clearedY < oldPos.y) // 只计算下方的消除行
+                            {
+                                rowsBelowCleared++;
+                            }
+                        }
+                        
+                        // 根据下方消除行数计算掉落距离
+                        float actualDropDistance = rowsBelowCleared * Config.BLOCK_SIZE;
+                        Vector3 newPos = oldPos - new Vector3(0, actualDropDistance, 0);
+                        
+//                         Debug.Log($"GameManager: 方块 {cellObj.name} 在 {oldPos}，下方有 {rowsBelowCleared} 行被消除，掉落距离 {actualDropDistance}，新位置 {newPos}");
                         
                         // 检查新位置是否在字典中
                         if (TryGetGridCell(newPos, out GameObject existingObj, "ProcessClearing_CheckTarget"))
