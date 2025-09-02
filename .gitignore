@@ -98,3 +98,4 @@ LocalDevelopment/
 # Unity specific
 *.unitypackage
 *.unitypackage.meta
+.vs/tetris-russia-block/xs/project-cache
