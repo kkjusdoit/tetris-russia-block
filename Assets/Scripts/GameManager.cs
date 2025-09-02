@@ -76,8 +76,11 @@ public class GameManager : MonoBehaviour
     /// <returns>格式化的字符串key</returns>
     private string Vector3ToKey(Vector3 position)
     {
-        // 使用固定小数位数避免浮点精度问题
-        return $"{position.x:F1}_{position.y:F1}_{position.z:F1}";
+        // 乘以10取整，避免浮点精度问题，性能更好
+        int x = Mathf.RoundToInt(position.x * 10);
+        int y = Mathf.RoundToInt(position.y * 10);
+        int z = Mathf.RoundToInt(position.z * 10);
+        return $"{x}_{y}_{z}";
     }
     
     /// <summary>
