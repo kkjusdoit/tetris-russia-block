@@ -69,6 +69,50 @@ public class GameManager : MonoBehaviour
         SpawnNextBlock();
     }
 
+    /// <summary>
+    /// 设置网格单元格的值
+    /// </summary>
+    /// <param name="position">网格位置</param>
+    /// <param name="cellObject">要设置的GameObject，null表示空闲</param>
+    /// <param name="context">调用上下文，用于调试</param>
+    private void SetGridCell(Vector3 position, GameObject cellObject, string context = "")
+    {
+        gridCell[position] = cellObject;
+        
+        if (!string.IsNullOrEmpty(context) && isDebugMode)
+        {
+            string status = cellObject == null ? "空闲" : $"被占用({cellObject.name})";
+            Debug.Log($"[{context}] 设置网格 {position}: {status}");
+        }
+    }
+    
+    /// <summary>
+    /// 尝试获取网格单元格的值
+    /// </summary>
+    /// <param name="position">网格位置</param>
+    /// <param name="cellObject">输出的GameObject</param>
+    /// <param name="context">调用上下文，用于调试</param>
+    /// <returns>是否成功获取到值</returns>
+    private bool TryGetGridCell(Vector3 position, out GameObject cellObject, string context = "")
+    {
+        bool result = gridCell.TryGetValue(position, out cellObject);
+        
+        if (!string.IsNullOrEmpty(context) && isDebugMode)
+        {
+            if (result)
+            {
+                string status = cellObject == null ? "空闲" : $"被占用({cellObject.name})";
+                Debug.Log($"[{context}] 获取网格 {position}: {status}");
+            }
+            else
+            {
+                Debug.LogWarning($"[{context}] 网格位置 {position} 不存在于字典中");
+            }
+        }
+        
+        return result;
+    }
+
     void InitGrid()
     {
 //         Debug.Log("=== GameManager: 开始初始化网格 ===");
@@ -77,7 +121,7 @@ public class GameManager : MonoBehaviour
         foreach (Transform child in BgGrids.transform)
         {
             Vector3 pos = child.localPosition;
-            gridCell[pos] = null;
+            SetGridCell(pos, null, "InitGrid");
             
             // 获取Grid组件用于调试可视化
             Grid gridComponent = child.GetComponent<Grid>();
@@ -131,7 +175,7 @@ public class GameManager : MonoBehaviour
 //                 Debug.LogError("=== GAME OVER: 方块到达顶部 ===");
                 return;
             }
-            gridCell[cellPos] = block.cells[i].gameObject;
+            SetGridCell(cellPos, block.cells[i].gameObject, "UpdateGrid");
         }
         
 //         Debug.Log("GameManager: 方块放置完成，开始检查消除");
@@ -187,7 +231,7 @@ public class GameManager : MonoBehaviour
             {
                 Vector3 pos = new Vector3(x, y, 0);
                 // 检查该位置是否被占用（有GameObject且不为null）
-                if (gridCell.TryGetValue(pos, out GameObject cellObj) && cellObj != null)
+                if (TryGetGridCell(pos, out GameObject cellObj, "CheckCanClear") && cellObj != null)
                 {
                     rows.Add(cellObj);
                 }
@@ -224,7 +268,7 @@ public class GameManager : MonoBehaviour
         {
 //             Debug.Log($"GameManager: 销毁方块 {cell.name} 在位置 {cell.transform.position}");
             //update gridCell
-            gridCell[cell.transform.position] = null;
+            SetGridCell(cell.transform.position, null, "ClearRow");
             // 注意：GameObject已在动画中被销毁，这里不需要再次Destroy
         }
 
@@ -371,7 +415,7 @@ public class GameManager : MonoBehaviour
                 
 //                 Debug.Log($"GameManager: 检查位置 {pos}");
                 
-                if (gridCell.TryGetValue(pos, out GameObject cellObj))
+                if (TryGetGridCell(pos, out GameObject cellObj, "ProcessClearing"))
                 {
                     if (cellObj != null)
                     {
@@ -384,9 +428,9 @@ public class GameManager : MonoBehaviour
 //                         Debug.Log($"GameManager: 方块 {cellObj.name} 从 {oldPos} 统一下降到 {newPos}");
                         
                         // 检查新位置是否在字典中
-                        if (gridCell.ContainsKey(newPos))
+                        if (TryGetGridCell(newPos, out GameObject existingObj, "ProcessClearing_CheckTarget"))
                         {
-//                             Debug.Log($"GameManager: 新位置 {newPos} 在字典中，当前值: {gridCell[newPos]}");
+//                             Debug.Log($"GameManager: 新位置 {newPos} 在字典中，当前值: {existingObj?.name}");
                         }
                         else
                         {
@@ -394,8 +438,8 @@ public class GameManager : MonoBehaviour
                         }
                         
                         // 更新字典
-                        gridCell[oldPos] = null;
-                        gridCell[newPos] = cellObj;
+                        SetGridCell(oldPos, null, "ProcessClearing_ClearSource");
+                        SetGridCell(newPos, cellObj, "ProcessClearing_SetTarget");
                         
                         // 移动GameObject
                         cellObj.transform.position = newPos;
@@ -432,7 +476,7 @@ public class GameManager : MonoBehaviour
             for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X; x += Config.BLOCK_SIZE)
             {
                 Vector3 pos = new Vector3(x, y, 0);
-                if (gridCell.TryGetValue(pos, out GameObject cellObj))
+                if (TryGetGridCell(pos, out GameObject cellObj, "ProcessClearing"))
                 {
                     if (cellObj != null)
                     {
@@ -468,7 +512,7 @@ public class GameManager : MonoBehaviour
         {
             var cellPos = block.cells[i].transform.position + direction;
 
-            var isOccupied = gridCell.TryGetValue(cellPos, out GameObject cellObj) && cellObj != null;
+            var isOccupied = TryGetGridCell(cellPos, out GameObject cellObj, "CheckGridOccupied") && cellObj != null;
 
             if (isOccupied)
             {
@@ -521,7 +565,7 @@ public class GameManager : MonoBehaviour
             if (gridComponent == null) continue;
             
             // 检查该位置是否被占用
-            if (gridCell.TryGetValue(pos, out GameObject occupyingCell))
+            if (TryGetGridCell(pos, out GameObject occupyingCell, "UpdateBgGrid"))
             {
                 if (occupyingCell != null)
                 {
