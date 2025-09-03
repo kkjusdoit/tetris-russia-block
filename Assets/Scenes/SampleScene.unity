@@ -1274,15 +1274,20 @@ MonoBehaviour:
   - {fileID: 6692744557080453001, guid: 6872aa86160af4ec780140d0cdd23da6, type: 3}
   - {fileID: 6692744557080453001, guid: 16b3b74e93e094086ae5da8bda45b5bc, type: 3}
   debugBlocks:
+  - {fileID: 6692744557080453001, guid: 13491e1eb758045168a9fdec86764def, type: 3}
   - {fileID: -2868251676741104991, guid: f1374838b04db465783ec98b9e8b2f76, type: 3}
-  - {fileID: 6692744557080453001, guid: 16b3b74e93e094086ae5da8bda45b5bc, type: 3}
+  - {fileID: 2058396335893628813, guid: 66ee81f0ca64d4e6d8ba1eca33df039e, type: 3}
   - {fileID: 3026022488200643009, guid: 8e6ab78b3c5164248ba6430345b6c8d5, type: 3}
   BgGrids: {fileID: 1323050543}
   blockSpeed: 0.5
   isDebugMode: 1
-  occupiedColor: {r: 1, g: 0, b: 0, a: 1}
-  emptyColor: {r: 0, g: 1, b: 0, a: 1}
-  normalColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  occupiedColor: {r: 1, g: 0, b: 0, a: 0.41960785}
+  emptyColor: {r: 0, g: 1, b: 0, a: 0.39607844}
+  normalColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.3254902}
+  clearAnimationDuration: 0.5
+  scaleUpDuration: 0.2
+  scaleDownDuration: 0.3
+  maxScale: 1.3
   score: 0
 --- !u!4 &561712357
 Transform:

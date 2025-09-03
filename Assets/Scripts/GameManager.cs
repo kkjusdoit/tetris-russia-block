@@ -508,11 +508,12 @@ public class GameManager : MonoBehaviour
                         
                         Vector3 oldPos = cellObj.transform.position;
                         
-                        // 计算该方块下方有多少行被消除
+                        // 计算该方块下方有多少行被消除（使用容差值避免浮点精度问题）
                         int rowsBelowCleared = 0;
                         foreach (float clearedY in sortedClearedRows)
                         {
-                            if (clearedY < oldPos.y) // 只计算下方的消除行
+                            // 使用容差值进行比较，避免浮点精度问题
+                            if (clearedY < oldPos.y - EPSILON) // 只计算明确在下方的消除行
                             {
                                 rowsBelowCleared++;
                             }
