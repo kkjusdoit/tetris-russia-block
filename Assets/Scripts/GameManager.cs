@@ -152,24 +152,51 @@ public class GameManager : MonoBehaviour
                 {
                     child.name = "Grid_" + pos.x + "_" + pos.y;
                     child.localScale = new Vector3(1f, 1f, 0.1f);
-                    gridComponent.SetColor(emptyColor);
+                    gridComponent.SetColor(normalColor); // 调试模式下也使用灰色作为默认颜色
                     
-                    // 添加TextMesh组件显示坐标
-                    GameObject textObj = new GameObject("CoordText");
-                    textObj.transform.SetParent(child);
-                    textObj.transform.localPosition = Vector3.zero;
-                    textObj.transform.localRotation = Quaternion.identity;
-                    textObj.transform.localScale = Vector3.one;
+                    // 添加TextMesh组件显示坐标（仅在边界位置）
+                    bool isLeftEdge = Mathf.Abs(pos.x - Config.LEFT_POS_X) < EPSILON; // 最左列
+                    bool isBottomEdge = Mathf.Abs(pos.y - Config.BOTTOM_POS_Y) < EPSILON; // 最下行
                     
-                    TextMesh textMesh = textObj.AddComponent<TextMesh>();
-                    textMesh.text = $"({pos.x},{pos.y})";
-                    textMesh.fontSize = 8;
-                    textMesh.color = Color.black;
-                    textMesh.anchor = TextAnchor.MiddleCenter;
-                    textMesh.alignment = TextAlignment.Center;
-                    
-                    // 调整文本位置，使其显示在网格上方
-                    textObj.transform.localPosition = new Vector3(0, 0, -0.1f);
+                    if (isLeftEdge || isBottomEdge)
+                    {
+                        GameObject textObj = new GameObject("CoordText");
+                        textObj.transform.SetParent(child);
+                        textObj.transform.localPosition = Vector3.zero;
+                        textObj.transform.localRotation = Quaternion.identity;
+                        textObj.transform.localScale = Vector3.one;
+                        
+                        TextMesh textMesh = textObj.AddComponent<TextMesh>();
+                        
+                        // 最左列显示Y值，最下行显示X值
+                        if (isLeftEdge && isBottomEdge)
+                        {
+                            textMesh.text = $"({pos.x},{pos.y})";
+                            textMesh.fontSize = 7;
+                        }
+                        else if (isLeftEdge)
+                        {
+                            // 最左列显示Y值（去掉小数点，用整数表示）
+                            int yInt = Mathf.RoundToInt(pos.y * 2); // -19, -17, -15, ..., 17, 19
+                            textMesh.text = yInt.ToString();
+                            textMesh.fontSize = 10;
+                        }
+                        else if (isBottomEdge)
+                        {
+                            // 最下行显示X值（去掉小数点，用整数表示）
+                            int xInt = Mathf.RoundToInt(pos.x * 2); // -9, -7, -5, ..., 7, 9
+                            textMesh.text = xInt.ToString();
+                            textMesh.fontSize = 10;
+                        }
+                        
+                        textMesh.fontStyle = FontStyle.Bold;
+                        textMesh.color = Color.black;
+                        textMesh.anchor = TextAnchor.MiddleCenter;
+                        textMesh.alignment = TextAlignment.Center;
+                        
+                        // 调整文本位置，使其显示在网格上方
+                        textObj.transform.localPosition = new Vector3(0, 0, -0.1f);
+                    }
                 }
                 else
                 {
@@ -648,8 +675,8 @@ public class GameManager : MonoBehaviour
                         }
                         else
                         {
-                            // 空闲 - 显示绿色
-                            gridComponent.SetColor(emptyColor);
+                            // 空闲 - 保持灰色
+                            gridComponent.SetColor(normalColor);
                         }
                     }
                     else
