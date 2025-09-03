@@ -153,6 +153,23 @@ public class GameManager : MonoBehaviour
                     child.name = "Grid_" + pos.x + "_" + pos.y;
                     child.localScale = new Vector3(1f, 1f, 0.1f);
                     gridComponent.SetColor(emptyColor);
+                    
+                    // 添加TextMesh组件显示坐标
+                    GameObject textObj = new GameObject("CoordText");
+                    textObj.transform.SetParent(child);
+                    textObj.transform.localPosition = Vector3.zero;
+                    textObj.transform.localRotation = Quaternion.identity;
+                    textObj.transform.localScale = Vector3.one;
+                    
+                    TextMesh textMesh = textObj.AddComponent<TextMesh>();
+                    textMesh.text = $"({pos.x},{pos.y})";
+                    textMesh.fontSize = 8;
+                    textMesh.color = Color.black;
+                    textMesh.anchor = TextAnchor.MiddleCenter;
+                    textMesh.alignment = TextAlignment.Center;
+                    
+                    // 调整文本位置，使其显示在网格上方
+                    textObj.transform.localPosition = new Vector3(0, 0, -0.1f);
                 }
                 else
                 {
