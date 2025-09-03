@@ -208,10 +208,10 @@ public class GameManager : MonoBehaviour
         
         //这里需要判断是否可以消除，如果可以消除，则消除，然后加分
         isProcessingClearing = true;
-        StartCoroutine(ProcessClearing());
+        StartCoroutine(ProcessClearing(block));
     }
 
-    private IEnumerator ProcessClearing()
+    private IEnumerator ProcessClearing(Block block)
     {
 //         Debug.Log("=== GameManager: 开始处理消除流程 ===");
         
