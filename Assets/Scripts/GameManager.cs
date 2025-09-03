@@ -217,7 +217,7 @@ public class GameManager : MonoBehaviour
         
         bool canClear;
         List<GameObject> fullRowsGameObjects;
-        (canClear, fullRowsGameObjects) = CanClear();
+        (canClear, fullRowsGameObjects) = CanClear(block);
         
         if (canClear)
         {
@@ -235,7 +235,7 @@ public class GameManager : MonoBehaviour
         SpawnNextBlock(); // 协程结束后生成新方块
     }
 
-    private (bool, List<GameObject>) CanClear()
+    private (bool, List<GameObject>) CanClear(Block block)
     {
 //         Debug.Log("=== GameManager: 检查是否可以消除 ===");
         
@@ -243,8 +243,21 @@ public class GameManager : MonoBehaviour
         List<GameObject> fullRows = new List<GameObject>();
         int fullRowCount = 0;
         
-        // 检查每一行是否全部被占据
-        for (float y = Config.BOTTOM_POS_Y; y <= Config.TOP_POS_Y + EPSILON; y += Config.BLOCK_SIZE)
+        // 获取当前方块涉及的所有Y坐标
+        HashSet<float> blockRows = new HashSet<float>();
+        foreach (Cell cell in block.cells)
+        {
+            if (cell != null)
+            {
+                float y = cell.transform.position.y;
+                blockRows.Add(y);
+            }
+        }
+        
+//         Debug.Log($"GameManager: 只检查方块涉及的行: [{string.Join(", ", blockRows)}]");
+        
+        // 只检查当前方块涉及的行是否全部被占据
+        foreach (float y in blockRows)
         {
             List<GameObject> rows = new List<GameObject>();
             for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X + EPSILON; x += Config.BLOCK_SIZE)
