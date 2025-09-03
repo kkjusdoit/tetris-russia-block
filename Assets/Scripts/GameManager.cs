@@ -4,6 +4,9 @@ using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
+    // 浮点精度容差常量
+    private const float EPSILON = 0.001f;
+    
     public Block[] blocks;
     public Block[] debugBlocks;
     private int blockIndex = 0;
@@ -186,7 +189,8 @@ public class GameManager : MonoBehaviour
             var cellPos = block.cells[i].transform.position;
 //             Debug.Log($"GameManager: 放置方块cell到位置 {cellPos}");
             
-            if (cellPos.y >= Config.TOP_POS_Y)
+            // 使用容差值进行顶部检查，避免浮点精度问题
+            if (cellPos.y >= Config.TOP_POS_Y - EPSILON)
             {
 //                 Debug.LogError("=== GAME OVER: 方块到达顶部 ===");
                 return;
@@ -240,10 +244,10 @@ public class GameManager : MonoBehaviour
         int fullRowCount = 0;
         
         // 检查每一行是否全部被占据
-        for (float y = Config.BOTTOM_POS_Y; y <= Config.TOP_POS_Y; y += Config.BLOCK_SIZE)
+        for (float y = Config.BOTTOM_POS_Y; y <= Config.TOP_POS_Y + EPSILON; y += Config.BLOCK_SIZE)
         {
             List<GameObject> rows = new List<GameObject>();
-            for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X; x += Config.BLOCK_SIZE)
+            for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X + EPSILON; x += Config.BLOCK_SIZE)
             {
                 Vector3 pos = new Vector3(x, y, 0);
                 // 检查该位置是否被占用（有GameObject且不为null）
@@ -255,7 +259,7 @@ public class GameManager : MonoBehaviour
             if (rows.Count == Config.GRID_WIDTH)
             {
                 fullRowCount++;
-//                 Debug.Log($"GameManager: 发现满行 y={y}，包含 {rows.Count} 个方块");
+                Debug.Log($"GameManager: 发现满行 y={y}，包含 {rows.Count} 个方块");
                 fullRows.AddRange(rows);
             }
         }
@@ -425,13 +429,13 @@ public class GameManager : MonoBehaviour
         
         // 从最低消除行的上方开始，逐行向上处理
         // 每个方块根据其下方被消除的行数计算掉落距离
-        for (float y = startY; y <= Config.TOP_POS_Y; y += Config.BLOCK_SIZE) //从最低消除行上方开始，到顶部结束
+        for (float y = startY; y <= Config.TOP_POS_Y + EPSILON; y += Config.BLOCK_SIZE) //从最低消除行上方开始，到顶部结束
         {
 //             Debug.Log($"GameManager: 检查第 {y} 行");
             int rowCellCount = 0;
             int rowDroppedCount = 0;
             
-            for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X; x += Config.BLOCK_SIZE)
+            for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X + EPSILON; x += Config.BLOCK_SIZE)
             {
                 Vector3 pos = new Vector3(x, y, 0);
                 totalCheckedCells++;
@@ -506,10 +510,10 @@ public class GameManager : MonoBehaviour
         int emptyCount = 0;
         
         // 只显示有方块的位置，避免日志过多
-        for (float y = Config.BOTTOM_POS_Y; y <= Config.TOP_POS_Y; y += Config.BLOCK_SIZE)
+        for (float y = Config.BOTTOM_POS_Y; y <= Config.TOP_POS_Y + EPSILON; y += Config.BLOCK_SIZE)
         {
             List<string> rowInfo = new List<string>();
-            for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X; x += Config.BLOCK_SIZE)
+            for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X + EPSILON; x += Config.BLOCK_SIZE)
             {
                 Vector3 pos = new Vector3(x, y, 0);
                 if (TryGetGridCell(pos, out GameObject cellObj, "ProcessClearing"))
@@ -594,9 +598,9 @@ public class GameManager : MonoBehaviour
 //         Debug.Log("=== GameManager: 更新调试可视化 ===");
         
         // 需要重新遍历所有网格位置，因为bgGridComponents的key现在是string
-        for (float y = Config.BOTTOM_POS_Y; y <= Config.TOP_POS_Y; y += Config.BLOCK_SIZE)
+        for (float y = Config.BOTTOM_POS_Y; y <= Config.TOP_POS_Y + EPSILON; y += Config.BLOCK_SIZE)
         {
-            for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X; x += Config.BLOCK_SIZE)
+            for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X + EPSILON; x += Config.BLOCK_SIZE)
             {
                 Vector3 pos = new Vector3(x, y, 0);
                 string key = Vector3ToKey(pos);
