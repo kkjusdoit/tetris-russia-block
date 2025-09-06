@@ -259,14 +259,12 @@ public class GameManager : MonoBehaviour
     {
 //         Debug.Log("=== GameManager: 开始处理消除流程 ===");
         
-        bool canClear;
-        List<GameObject> fullRowsGameObjects;
-        (canClear, fullRowsGameObjects) = CanClear(block);
+        List<GameObject> fullRowsGameObjects = CanClear(block);
         
-        if (canClear)
+        if (fullRowsGameObjects.Count > 0)
         {
-//             Debug.Log($"GameManager: 发现可消除行，共 {fullRowsGameObjects.Count} 个方块需要消除");
-            yield return StartCoroutine(Clear(fullRowsGameObjects)); // 等待消除动画完成
+            Debug.LogError($"GameManager: 发现可消除行，共 {fullRowsGameObjects.Count} 个方块需要消除");
+            yield return StartCoroutine(ClearRows(fullRowsGameObjects)); // 等待消除动画完成
             AddScore();                           // 加分
         }
         else
@@ -279,7 +277,7 @@ public class GameManager : MonoBehaviour
         SpawnNextBlock(); // 协程结束后生成新方块
     }
 
-    private (bool, List<GameObject>) CanClear(Block block)
+    private List<GameObject> CanClear(Block block)
     {
 //         Debug.Log("=== GameManager: 检查是否可以消除 ===");
         
@@ -322,10 +320,10 @@ public class GameManager : MonoBehaviour
         }
         
 //         Debug.Log($"GameManager: 检查完成，共发现 {fullRowCount} 个满行，{fullRows.Count} 个方块");
-        return (fullRows.Count > 0, fullRows);
+        return fullRows;
     }
 
-    private IEnumerator Clear(List<GameObject> fullRowGameObjects)
+    private IEnumerator ClearRows(List<GameObject> fullRowGameObjects)
     {
 //         Debug.Log($"=== GameManager: 开始清除 {fullRowGameObjects.Count} 个方块 ===");
         
@@ -425,6 +423,12 @@ public class GameManager : MonoBehaviour
             {
                 cell.transform.localScale = originalScales[cell] * this.maxScale;
             }
+        }
+
+        // here can add a unity pause so that i can check 
+        if (Application.isEditor && isDebugMode)
+        {
+            UnityEditor.EditorApplication.isPaused = true;
         }
         
         // 第二阶段：缩小到消失
