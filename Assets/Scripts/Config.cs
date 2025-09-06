@@ -4,10 +4,10 @@ public static class Config
 {
     public static int GRID_WIDTH = 10;
     public static int GRID_HEIGHT = 20;
-    public static float TOP_POS_Y = 9.5f;
-    public static float BOTTOM_POS_Y = -9.5f;
-    public static float LEFT_POS_X = -4.5f;
-    public static float RIGHT_POS_X = 4.5f;
+    public static int TOP_POS_Y = 9;
+    public static int BOTTOM_POS_Y = -10;
+    public static int LEFT_POS_X = -5;
+    public static int RIGHT_POS_X = 4;
 
     public static float BLOCK_SIZE = 1f;
 
@@ -21,7 +21,7 @@ public static class Config
             case BlockTypeEnum.OneByThree:
                 return new Vector3[] { new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(0, -1, 0) };
             case BlockTypeEnum.TwoByTwo:
-                return new Vector3[] { new Vector3(1, 0, 0), new Vector3(1, -1, 0), new Vector3(0, -1, 0), new Vector3(1, 0, 0) };
+                return new Vector3[] { new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, -1, 0), new Vector3(1, -1, 0) };
             case BlockTypeEnum.L:
                 return new Vector3[] { new Vector3(0, 0, 0), new Vector3(0, -1, 0), new Vector3(0, -2, 0), new Vector3(1, -2, 0) };
             case BlockTypeEnum.T:
