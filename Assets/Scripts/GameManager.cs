@@ -416,10 +416,10 @@ public class GameManager : MonoBehaviour
         }
 
         // here can add a unity pause so that i can check 
-        if (Application.isEditor && isDebugMode)
-        {
-            UnityEditor.EditorApplication.isPaused = true;
-        }
+        // if (Application.isEditor && isDebugMode)
+        // {
+        //     UnityEditor.EditorApplication.isPaused = true;
+        // }
         
         // 第二阶段：缩小到消失
 //         Debug.Log("GameManager: 动画第二阶段 - 缩小");
