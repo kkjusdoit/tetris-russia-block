@@ -99,3 +99,4 @@ LocalDevelopment/
 *.unitypackage
 *.unitypackage.meta
 .vs/tetris-russia-block/xs/project-cache
+run_xcmac.sh
