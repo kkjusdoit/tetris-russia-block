@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq; // Added for .Select()
 
 public class GameManager : MonoBehaviour
 {
@@ -80,10 +81,15 @@ public class GameManager : MonoBehaviour
     private string Vector3ToKey(Vector3 position)
     {
         // 乘以10取整，避免浮点精度问题，性能更好
-        int x = Mathf.RoundToInt(position.x * 10);
-        int y = Mathf.RoundToInt(position.y * 10);
-        int z = Mathf.RoundToInt(position.z * 10);
+        int x = FloatToScaledInt(position.x);
+        int y = FloatToScaledInt(position.y);
+        int z = FloatToScaledInt(position.z);
         return $"{x}_{y}_{z}";
+    }
+
+    private int FloatToScaledInt(float value)
+    {
+        return Mathf.RoundToInt(value * 2);
     }
     
     /// <summary>
@@ -257,54 +263,56 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator ProcessClearing(Block block)
     {
-//         Debug.Log("=== GameManager: 开始处理消除流程 ===");
+        Debug.Log("=== GameManager: 开始处理消除流程 ===");
         
-        List<GameObject> fullRowsGameObjects = CanClear(block);
+        var (fullRowsGameObjects, fullRowDoubleIntY) = CanClear(block);
         
         if (fullRowsGameObjects.Count > 0)
         {
             Debug.LogError($"GameManager: 发现可消除行，共 {fullRowsGameObjects.Count} 个方块需要消除");
-            yield return StartCoroutine(ClearRows(fullRowsGameObjects)); // 等待消除动画完成
+            yield return StartCoroutine(ClearRows(fullRowsGameObjects, fullRowDoubleIntY)); // 等待消除动画完成
             AddScore();                           // 加分
         }
         else
         {
-//             Debug.Log("GameManager: 没有可消除的行");
+            Debug.Log("GameManager: 没有可消除的行");
         }
         
-//         Debug.Log("GameManager: 消除流程完成，准备生成下一个方块");
+        Debug.Log("GameManager: 消除流程完成，准备生成下一个方块");
         isProcessingClearing = false;
         SpawnNextBlock(); // 协程结束后生成新方块
     }
 
-    private List<GameObject> CanClear(Block block)
+    private (List<GameObject> fullRowsGameObjects, HashSet<int> blockRows) CanClear(Block block)
     {
-//         Debug.Log("=== GameManager: 检查是否可以消除 ===");
+        Debug.Log("=== GameManager: 检查是否可以消除 ===");
         
         //record all full rows grids position
-        List<GameObject> fullRows = new List<GameObject>();
+        List<GameObject> fullRowsGameObjects = new List<GameObject>();
         int fullRowCount = 0;
         
         // 获取当前方块涉及的所有Y坐标
-        HashSet<float> blockRows = new HashSet<float>();
+        HashSet<int> blockRows = new HashSet<int>();
         foreach (Cell cell in block.cells)
         {
             if (cell != null)
             {
                 float y = cell.transform.position.y;
-                blockRows.Add(y);
+                blockRows.Add(FloatToScaledInt(y));
             }
         }
         
-//         Debug.Log($"GameManager: 只检查方块涉及的行: [{string.Join(", ", blockRows)}]");
+        Debug.Log($"GameManager: 只检查方块涉及的行: [{string.Join(", ", blockRows.Select(y => y / 2f))}]");
         
+
+        var fullRowY = new HashSet<int>();
         // 只检查当前方块涉及的行是否全部被占据
-        foreach (float y in blockRows)
+        foreach (int y in blockRows)
         {
             List<GameObject> rows = new List<GameObject>();
             for (float x = Config.LEFT_POS_X; x <= Config.RIGHT_POS_X + EPSILON; x += Config.BLOCK_SIZE)
             {
-                Vector3 pos = new Vector3(x, y, 0);
+                Vector3 pos = new Vector3(x, y/2f, 0);
                 // 检查该位置是否被占用（有GameObject且不为null）
                 if (TryGetGridCell(pos, out GameObject cellObj, "CheckCanClear") && cellObj != null)
                 {
@@ -315,25 +323,19 @@ public class GameManager : MonoBehaviour
             {
                 fullRowCount++;
                 Debug.Log($"GameManager: 发现满行 y={y}，包含 {rows.Count} 个方块");
-                fullRows.AddRange(rows);
+                fullRowsGameObjects.AddRange(rows);
+                fullRowY.Add(y);
             }
         }
         
-//         Debug.Log($"GameManager: 检查完成，共发现 {fullRowCount} 个满行，{fullRows.Count} 个方块");
-        return fullRows;
+        Debug.Log($"GameManager: 检查完成，共发现 {fullRowCount} 个满行，{fullRowsGameObjects.Count} 个方块");
+        return (fullRowsGameObjects, fullRowY);
     }
 
-    private IEnumerator ClearRows(List<GameObject> fullRowGameObjects)
+    // 清除满行
+    private IEnumerator ClearRows(List<GameObject> fullRowGameObjects, HashSet<int> fullRowDoubleIntY)
     {
-//         Debug.Log($"=== GameManager: 开始清除 {fullRowGameObjects.Count} 个方块 ===");
-        
-        // 记录被消除的行Y坐标
-        HashSet<float> clearedRowsY = new HashSet<float>();
-        foreach (GameObject cell in fullRowGameObjects)
-        {
-            float cellY = cell.transform.position.y;
-            clearedRowsY.Add(cellY);
-        }
+        Debug.Log($"=== GameManager: 开始清除 {fullRowGameObjects.Count} 个方块 ===");
         
         // 1. 播放消除动画
         yield return StartCoroutine(PlayClearAnimation(fullRowGameObjects));
@@ -341,7 +343,7 @@ public class GameManager : MonoBehaviour
         // 2. 实际消除行（更新网格字典）
         foreach (GameObject cell in fullRowGameObjects)
         {
-//             Debug.Log($"GameManager: 销毁方块 {cell.name} 在位置 {cell.transform.position}");
+            Debug.Log($"GameManager: 销毁方块 {cell.name} 在位置 {cell.transform.position}");
             //update gridCell
             SetGridCell(cell.transform.position, null, "ClearRow");
             // 注意：GameObject已在动画中被销毁，这里不需要再次Destroy
@@ -353,19 +355,8 @@ public class GameManager : MonoBehaviour
         {
             block.UpdateCells();
         }
-        
-        // 找到最高的被消除行Y坐标和消除的总行数
-        float highestClearedY = float.MinValue;
-        foreach (float y in clearedRowsY)
-        {
-            if (y > highestClearedY)
-                highestClearedY = y;
-        }
-        
-        int totalClearedRows = clearedRowsY.Count;
-        
-//         Debug.Log($"GameManager: 共消除了 {totalClearedRows} 行，最高消除行Y: {highestClearedY}");
-//         Debug.Log("GameManager: 方块销毁完成，开始处理掉落");
+                
+        Debug.Log("GameManager: 方块销毁完成，开始处理掉落");
         
         // 更新调试可视化（消除后）
         if (isDebugMode)
@@ -373,9 +364,8 @@ public class GameManager : MonoBehaviour
             UpdateDebugVisualization();
         }
         
-        // 3. 处理上方行掉落，将HashSet转换为List后传递
-        List<float> clearedRowsList = new List<float>(clearedRowsY);
-        yield return StartCoroutine(DropRows(clearedRowsList));
+        // 3. 处理上方行掉落
+        yield return StartCoroutine(DropRows(fullRowDoubleIntY));
     }
 
     // 播放消除动画：缩放效果
@@ -467,23 +457,23 @@ public class GameManager : MonoBehaviour
     // GetCellCanDropHeight 方法已删除，因为现在所有上方方块统一下降消除的行数
 
     //处理上方行掉落
-    private IEnumerator DropRows(List<float> clearedRowsY)
+    private IEnumerator DropRows(HashSet<int> fullRowDoubleIntY)
     {
         // 将消除行按Y坐标排序，从低到高
-        List<float> sortedClearedRows = new List<float>(clearedRowsY);
-        sortedClearedRows.Sort();
+        List<int> sortedClearedRowsDoubleY = new List<int>(fullRowDoubleIntY);
+        sortedClearedRowsDoubleY.Sort();
         
-        int totalClearedRows = sortedClearedRows.Count;
+        int totalClearedRows = fullRowDoubleIntY.Count;
         
-//         Debug.Log("=== GameManager: 开始处理方块掉落 ===");
-//         Debug.Log($"GameManager: 消除行数={totalClearedRows}，消除行位置: [{string.Join(", ", sortedClearedRows)}]");
+        Debug.Log("=== GameManager: 开始处理方块掉落 ===");
+        Debug.Log($"GameManager: 消除行数={totalClearedRows}，消除行位置: [{string.Join(", ", sortedClearedRowsDoubleY.Select(y => y / 2f))}]");
         
         // 找到最低的消除行，从这里开始处理掉落
-        float lowestClearedY = sortedClearedRows[0];
+        float lowestClearedY = sortedClearedRowsDoubleY[0] / 2f;
         float startY = lowestClearedY + Config.BLOCK_SIZE; // 从最低消除行上方开始
         
-//         Debug.Log($"GameManager: 最低消除行Y: {lowestClearedY}，从 Y: {startY} 开始检查到 {Config.TOP_POS_Y}");
-//         Debug.Log($"GameManager: X范围: {Config.LEFT_POS_X} 到 {Config.RIGHT_POS_X}");
+        Debug.Log($"GameManager: 最低消除行Y: {lowestClearedY}，从 Y: {startY} 开始检查到 {Config.TOP_POS_Y}");
+        Debug.Log($"GameManager: X范围: {Config.LEFT_POS_X} 到 {Config.RIGHT_POS_X}");
         
         int totalDroppedCells = 0;
         int totalCheckedCells = 0;
@@ -492,7 +482,7 @@ public class GameManager : MonoBehaviour
         // 每个方块根据其下方被消除的行数计算掉落距离
         for (float y = startY; y <= Config.TOP_POS_Y + EPSILON; y += Config.BLOCK_SIZE) //从最低消除行上方开始，到顶部结束
         {
-//             Debug.Log($"GameManager: 检查第 {y} 行");
+            Debug.Log($"GameManager: 检查第 {y} 行");
             int rowCellCount = 0;
             int rowDroppedCount = 0;
             
@@ -501,23 +491,22 @@ public class GameManager : MonoBehaviour
                 Vector3 pos = new Vector3(x, y, 0);
                 totalCheckedCells++;
                 
-//                 Debug.Log($"GameManager: 检查位置 {pos}");
+                Debug.Log($"GameManager: 检查位置 {pos}");
                 
                 if (TryGetGridCell(pos, out GameObject cellObj, "ProcessClearing"))
                 {
                     if (cellObj != null)
                     {
                         rowCellCount++;
-//                         Debug.Log($"GameManager: 位置 {pos} 有方块 {cellObj.name}");
+                        Debug.Log($"GameManager: 位置 {pos} 有方块 {cellObj.name}");
                         
                         Vector3 oldPos = cellObj.transform.position;
                         
                         // 计算该方块下方有多少行被消除（使用容差值避免浮点精度问题）
                         int rowsBelowCleared = 0;
-                        foreach (float clearedY in sortedClearedRows)
+                        foreach (int clearedY in sortedClearedRowsDoubleY)
                         {
-                            // 使用容差值进行比较，避免浮点精度问题
-                            if (clearedY < oldPos.y - EPSILON) // 只计算明确在下方的消除行
+                            if (clearedY < FloatToScaledInt(oldPos.y)) // 只计算明确在下方的消除行
                             {
                                 rowsBelowCleared++;
                             }
@@ -527,16 +516,16 @@ public class GameManager : MonoBehaviour
                         float actualDropDistance = rowsBelowCleared * Config.BLOCK_SIZE;
                         Vector3 newPos = oldPos - new Vector3(0, actualDropDistance, 0);
                         
-//                         Debug.Log($"GameManager: 方块 {cellObj.name} 在 {oldPos}，下方有 {rowsBelowCleared} 行被消除，掉落距离 {actualDropDistance}，新位置 {newPos}");
+                        Debug.Log($"GameManager: 方块 {cellObj.name} 在 {oldPos}，下方有 {rowsBelowCleared} 行被消除，掉落距离 {actualDropDistance}，新位置 {newPos}");
                         
                         // 检查新位置是否在字典中
                         if (TryGetGridCell(newPos, out GameObject existingObj, "ProcessClearing_CheckTarget"))
                         {
-//                             Debug.Log($"GameManager: 新位置 {newPos} 在字典中，当前值: {existingObj?.name}");
+                            Debug.Log($"GameManager: 新位置 {newPos} 在字典中，当前值: {existingObj?.name}");
                         }
                         else
                         {
-//                             Debug.LogError($"GameManager: 新位置 {newPos} 不在字典中！");
+                            Debug.LogError($"GameManager: 新位置 {newPos} 不在字典中！");
                         }
                         
                         // 更新字典
@@ -548,26 +537,26 @@ public class GameManager : MonoBehaviour
                         totalDroppedCells++;
                         rowDroppedCount++;
                         
-//                         Debug.Log($"GameManager: 字典更新完成 - 旧位置 {oldPos}: null, 新位置 {newPos}: {cellObj.name}");
+                        Debug.Log($"GameManager: 字典更新完成 - 旧位置 {oldPos}: null, 新位置 {newPos}: {cellObj.name}");
                     }
                     else
                     {
-//                         Debug.Log($"GameManager: 位置 {pos} 为空 (null)");
+                        Debug.Log($"GameManager: 位置 {pos} 为空 (null)");
                     }
                 }
                 else
                 {
-//                     Debug.LogWarning($"GameManager: 位置 {pos} 不在字典中");
+                    Debug.LogWarning($"GameManager: 位置 {pos} 不在字典中");
                 }
             }
             
-//             Debug.Log($"GameManager: 第 {y} 行检查完成 - 共 {rowCellCount} 个方块，{rowDroppedCount} 个掉落");
+            Debug.Log($"GameManager: 第 {y} 行检查完成 - 共 {rowCellCount} 个方块，{rowDroppedCount} 个掉落");
         }
         
-//         Debug.Log($"GameManager: 掉落处理完成 - 从Y={startY}开始检查了 {totalCheckedCells} 个位置，共有 {totalDroppedCells} 个方块发生了掉落");
+        Debug.Log($"GameManager: 掉落处理完成 - 从Y={startY}开始检查了 {totalCheckedCells} 个位置，共有 {totalDroppedCells} 个方块发生了掉落");
         
         // 验证字典状态
-//         Debug.Log("=== GameManager: 验证掉落后字典状态 ===");
+        Debug.Log("=== GameManager: 验证掉落后字典状态 ===");
         int occupiedCount = 0;
         int emptyCount = 0;
         
@@ -593,11 +582,11 @@ public class GameManager : MonoBehaviour
             }
             if (rowInfo.Count > 0)
             {
-//                 Debug.Log($"GameManager: Y={y}行有方块: {string.Join(", ", rowInfo)}");
+                Debug.Log($"GameManager: Y={y}行有方块: {string.Join(", ", rowInfo)}");
             }
         }
         
-//         Debug.Log($"GameManager: 字典状态总结 - 占用: {occupiedCount}, 空闲: {emptyCount}");
+        Debug.Log($"GameManager: 字典状态总结 - 占用: {occupiedCount}, 空闲: {emptyCount}");
         
         // 更新调试可视化（掉落后）
         if (isDebugMode)
