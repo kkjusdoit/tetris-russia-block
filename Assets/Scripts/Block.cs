@@ -42,6 +42,7 @@ public class Block : MonoBehaviour
     private Queue<BlockOperation> operationQueue = new Queue<BlockOperation>();
     private bool isProcessingOperation = false; // 状态锁定
     private BlockOperation? currentOperation = null;
+    private Coroutine currentOperationCoroutine = null; // 当前操作的协程引用
 
     // public BlockTypeEnum blockType;
     
@@ -61,6 +62,7 @@ public class Block : MonoBehaviour
         operationQueue.Clear();
         isProcessingOperation = false;
         currentOperation = null;
+        currentOperationCoroutine = null;
         
         PrepareCells();
         
@@ -171,11 +173,26 @@ public class Block : MonoBehaviour
     
     private void ProcessOperationQueue()
     {
-        // 如果正在处理操作或队列为空，返回
-        if (isProcessingOperation || operationQueue.Count == 0)
+        if (operationQueue.Count == 0) return;
+        
+        var nextOperation = operationQueue.Peek();
+        
+        // 如果有更高优先级的操作，中断当前操作
+        if (isProcessingOperation && currentOperation.HasValue)
         {
-            return;
+            if (nextOperation.priority < currentOperation.Value.priority)
+            {
+                Debug.Log($"Block: {gameObject.name} 中断当前操作 {currentOperation.Value.type}，执行高优先级操作 {nextOperation.type}");
+                StopCurrentOperation();
+            }
+            else
+            {
+                return; // 等待当前操作完成
+            }
         }
+        
+        // 如果正在处理操作，返回
+        if (isProcessingOperation) return;
         
         // 获取下一个操作
         var operation = operationQueue.Dequeue();
@@ -184,8 +201,25 @@ public class Block : MonoBehaviour
         
 //         Debug.Log($"Block: {gameObject.name} 开始处理操作 {operation.type} {operation.direction}");
         
-        // 执行操作
-        StartCoroutine(ExecuteOperation(operation));
+        // 执行操作并保存协程引用
+        currentOperationCoroutine = StartCoroutine(ExecuteOperation(operation));
+    }
+    
+    /// <summary>
+    /// 停止当前正在执行的操作
+    /// </summary>
+    private void StopCurrentOperation()
+    {
+        if (currentOperationCoroutine != null)
+        {
+            StopCoroutine(currentOperationCoroutine);
+            currentOperationCoroutine = null;
+        }
+        
+        isProcessingOperation = false;
+        currentOperation = null;
+        
+        Debug.Log($"Block: {gameObject.name} 当前操作已被中断");
     }
     
     private IEnumerator ExecuteOperation(BlockOperation operation)
@@ -212,6 +246,7 @@ public class Block : MonoBehaviour
         // 操作完成，释放锁定
         isProcessingOperation = false;
         currentOperation = null;
+        currentOperationCoroutine = null; // 清理协程引用
         
 //         Debug.Log($"Block: {gameObject.name} 操作 {operation.type} 执行完成");
         
@@ -406,6 +441,7 @@ public class Block : MonoBehaviour
         // 清空操作队列，因为已经停止
         operationQueue.Clear();
         isProcessingOperation = false;
+        currentOperationCoroutine = null; // 清理协程引用
         
 //         Debug.Log($"Block: {gameObject.name} 正式停止移动，通知GameManager更新网格");
         GameManager.Instance.UpdateGrid(this);
